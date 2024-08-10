@@ -10,6 +10,7 @@ xx = "https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/tree/master/include/
 repo = "https://gitlab.freedesktop.org/xorg/proto/xorgproto.git"
 pattern = r"#define XK_(\w+)\s+0x(\w+)(?:\s+/\*\s+U\+(\w+))?"
 xf86pattern = r"#define XF86XK_(\w+)\s+0x(\w+)(?:\s+/\*\s+U\+(\w+))?"
+evdevpattern = r"#define XF86XK_(\w+)\s+_EVDEVK\(0x(\w+)\)"
 
 
 def main():
@@ -30,6 +31,11 @@ def main():
         for name, sym, uni in findall(xf86pattern, text):
             sym = int(sym, 16)
             uni = int(uni, 16) if uni else None
+            if keysymdef.get("XF86_" + name, None):
+                print("KEY DUP", "XF86_" + name)
+            keysymdef["XF86_" + name] = sym
+        for name, sym in findall(evdevpattern, text):
+            sym = int(sym, 16) + 0x10081000
             if keysymdef.get("XF86_" + name, None):
                 print("KEY DUP", "XF86_" + name)
             keysymdef["XF86_" + name] = sym
